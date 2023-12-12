@@ -61,7 +61,10 @@ int main()
                 exit(0);
             }
             bzero(buffer, 1024);
-            strcpy(buffer, "Bonjour, c'est le serveur..");
+            char message[50];
+            printf("Entrer le message  : ");
+            scanf("%s", &message);
+            strcpy(buffer, message);
             printf("Server: %s\n", buffer);
             send(client_sock, buffer, strlen(buffer), 0);
         }
