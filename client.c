@@ -34,33 +34,52 @@ int main()
 
     while (1)
     {
-        char message[50];
-        printf("Entrer le message  : ");
-        // scanf("%s", &message);
-        fgets(message, sizeof(message), stdin);
 
-        bzero(buffer, 1024);
+        pid_t pid;
 
-        int isBye;
+        // Fork a new process
+        pid = fork();
 
-        if (strcmp(message, "bye") == 0)
+        if (pid < 0)
         {
-            isBye = 1;
-        }
-        strcpy(buffer, message);
-        printf("Client: %s\n", buffer);
-        send(sock, message, strlen(message), 0);
-
-        if (isBye == 1)
-        {
-            printf("Reçu 'bye' du client. Fermeture du serveur.\n");
-            close(sock);
-            exit(0);
+            fprintf(stderr, "Fork failed\n");
+            return 1;
         }
 
-        bzero(buffer, 1024);
-        recv(sock, buffer, sizeof(buffer), 0);
-        printf("Server: %s\n", buffer);
+        char message[10000];
+
+        if (pid > 0)
+        {
+
+            // scanf("%s", &message);
+            fgets(message, sizeof(message), stdin);
+
+            bzero(buffer, 1024);
+
+            int isBye;
+
+            if (strcmp(message, "bye") == 0)
+            {
+                isBye = 1;
+            }
+            strcpy(buffer, message);
+            printf("Client: %s\n", buffer);
+            send(sock, message, strlen(message), 0);
+            if (isBye == 1)
+            {
+                printf("Reçu 'bye' du client. Fermeture du serveur.\n");
+                close(sock);
+                exit(0);
+            }
+        }
+
+        else if (pid == 0)
+        {
+
+            bzero(buffer, 1024);
+            recv(sock, buffer, sizeof(buffer), 0);
+            printf("Server: %s\n", buffer);
+        }
     }
 
     close(sock);

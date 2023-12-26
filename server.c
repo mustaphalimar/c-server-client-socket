@@ -51,26 +51,54 @@ int main()
         while (1)
         {
 
-            bzero(buffer, 1024);
-            recv(client_sock, buffer, sizeof(buffer), 0);
+            pid_t pid;
 
-            printf("Client: %s\n", buffer);
-            if (strcmp(buffer, "bye") == 0)
+            // Fork a new process
+            pid = fork();
+
+            if (pid < 0)
             {
-                printf("Reçu 'bye' du client. Fermeture du serveur.\n");
-                close(server_sock);
-                exit(0);
+                fprintf(stderr, "Fork failed\n");
+                return 1;
             }
-            bzero(buffer, 1024);
+
             char message[10000];
 
-            printf("Entrer le message  : ");
-            // scanf("%s", &message);
-            fgets(message, sizeof(message), stdin);
+            if (pid > 0)
+            {
 
-            strcpy(buffer, message);
-            printf("Server: %s\n", buffer);
-            send(client_sock, buffer, strlen(buffer), 0);
+                bzero(buffer, 1024);
+                recv(client_sock, buffer, sizeof(buffer), 0);
+
+                printf("Client: %s\n", buffer);
+                if (strcmp(buffer, "bye") == 0)
+                {
+                    printf("Reçu 'bye' du client. Fermeture du serveur.\n");
+                    close(server_sock);
+                    exit(0);
+                }
+                bzero(buffer, 1024);
+            }
+
+            // Child process
+            else if (pid == 0)
+            {
+
+                // scanf("%s", &message);
+                fgets(message, sizeof(message), stdin);
+
+                strcpy(buffer, message);
+                printf("Server: %s\n", buffer);
+                send(client_sock, buffer, strlen(buffer), 0);
+            }
+
+            // printf("Entrer le message  : ");
+            // // scanf("%s", &message);
+            // fgets(message, sizeof(message), stdin);
+
+            // strcpy(buffer, message);
+            // printf("Server: %s\n", buffer);
+            // send(client_sock, buffer, strlen(buffer), 0);
         }
 
         close(client_sock);
